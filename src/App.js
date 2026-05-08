@@ -50,16 +50,10 @@ function App() {
   const [systemOpen, setSystemOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [dbReady, setDbReady] = useState(false);
-  const [firebaseError, setFirebaseError] = useState(false);
 
-  // Step 1: Initialize Firebase + read initial systemOpen
+  // Step 1: Initialize Firebase settings doc
   useEffect(() => {
     const init = async () => {
-      if (!db) {
-        setFirebaseError(true);
-        setDbReady(true);
-        return;
-      }
       try {
         const ref = doc(db, "settings", "global");
         const snap = await getDoc(ref);
@@ -75,7 +69,7 @@ function App() {
         }
       } catch (e) {
         console.error("Firebase init error:", e);
-        setFirebaseError(true);
+        // Even on error, continue — don't block the app
       }
       setDbReady(true);
     };
@@ -86,17 +80,13 @@ function App() {
   useEffect(() => {
     if (!dbReady) return;
 
-    // Admin route — always works regardless of systemOpen
+    // Always allow admin route
     if (window.location.search.includes("admin=1")) {
       const saved = localStorage.getItem("sv_user");
       if (saved) {
         try {
           const u = JSON.parse(saved);
-          if (u.isAdmin) {
-            setCurrentUser(u);
-            setScreen("admin");
-            return;
-          }
+          if (u.isAdmin) { setCurrentUser(u); setScreen("admin"); return; }
         } catch (e) {}
       }
       setScreen("admin-login");
@@ -110,7 +100,6 @@ function App() {
         const u = JSON.parse(saved);
         setCurrentUser(u);
         if (u.isAdmin) { setScreen("admin"); return; }
-        // Regular user — go to voting regardless of systemOpen
         setScreen("voting");
         return;
       } catch (e) {
@@ -118,29 +107,27 @@ function App() {
       }
     }
 
-    // No session — check systemOpen
+    // No session
     setScreen(systemOpen ? "welcome" : "closed");
   }, [dbReady]);
 
-  // Step 3: Listen to systemOpen changes in real-time
+  // Step 3: Real-time system open/close
   useEffect(() => {
-    if (!dbReady || !db || firebaseError) return;
+    if (!dbReady) return;
     const unsub = onSnapshot(doc(db, "settings", "global"), (snap) => {
       if (snap.exists()) {
         const open = snap.data().systemOpen || false;
         setSystemOpen(open);
-        // If system closed and user not logged in on non-admin screen
         if (!open && !currentUser && screen !== "admin" && screen !== "admin-login") {
           setScreen("closed");
         }
-        // If system opened and was on closed
         if (open && screen === "closed" && !currentUser) {
           setScreen("welcome");
         }
       }
     });
     return unsub;
-  }, [dbReady, firebaseError, currentUser, screen]);
+  }, [dbReady, currentUser, screen]);
 
   const goTo = (s) => setScreen(s);
 
@@ -157,35 +144,7 @@ function App() {
     setScreen(systemOpen ? "welcome" : "closed");
   };
 
-  // Loading state
   if (!dbReady) return <Loader />;
-
-  // Firebase not configured
-  if (firebaseError) {
-    return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0f", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", fontFamily: "sans-serif" }}>
-        <div style={{ background: "#1f0e0e", border: "1.5px solid #7f1d1d", borderRadius: 16, padding: "2rem", maxWidth: 520, width: "100%" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-          <h2 style={{ color: "#f87171", marginBottom: 16, fontSize: 20 }}>Firebase Not Configured</h2>
-          <p style={{ color: "#fca5a5", lineHeight: 1.7, marginBottom: 16, fontSize: 14 }}>
-            Your Firebase environment variables are missing in Vercel. Go to Vercel → Your Project → Settings → Environment Variables and add:
-          </p>
-          <div style={{ background: "#0d0b18", border: "1px solid #2a2840", borderRadius: 8, padding: 14, color: "#a78bfa", fontSize: 12, lineHeight: 2, fontFamily: "monospace" }}>
-            REACT_APP_FIREBASE_API_KEY<br />
-            REACT_APP_FIREBASE_AUTH_DOMAIN<br />
-            REACT_APP_FIREBASE_PROJECT_ID<br />
-            REACT_APP_FIREBASE_STORAGE_BUCKET<br />
-            REACT_APP_FIREBASE_MESSAGING_SENDER_ID<br />
-            REACT_APP_FIREBASE_APP_ID<br />
-            REACT_APP_ADMIN_PASSWORD
-          </div>
-          <p style={{ color: "#fca5a5", fontSize: 13, marginTop: 14 }}>
-            After adding → Vercel Dashboard → Deployments → Redeploy.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>
