@@ -4,6 +4,7 @@ import { db } from "../firebase";
 import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import { DEFAULT_QUIZ, DEFAULT_PRODUCTS } from "../App";
 import { S } from "./styles";
+import logo from "../logo.png";
 
 const TABS = ["Products", "Quiz", "Results", "Users"];
 
@@ -79,7 +80,10 @@ export default function AdminPanel({ onLogout, systemOpen: initOpen }) {
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-          <h1 style={{ ...S.h1, fontSize: 22 }}>⚙️ Admin Panel</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <img src={logo} alt="Jolrasi" style={{ height: 40, objectFit: "contain" }} />
+            <h1 style={{ ...S.h1, fontSize: 20 }}>⚙️ Admin Panel</h1>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#16141f", border: "1.5px solid #2a2840", borderRadius: 12, padding: "10px 16px" }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: systemOpen ? "#00b894" : "#e74c3c", boxShadow: systemOpen ? "0 0 8px #00b894" : "none" }} />

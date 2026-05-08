@@ -1,9 +1,10 @@
 // src/components/VotingScreen.js
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { DEFAULT_PRODUCTS } from "../App";
 import { S } from "./styles";
+import logo from "../logo.png";
 
 const FEMALE_CATS = ["dress", "saree", "salwar", "kurti", "skirt", "set", "top", "gown"];
 const CLOTH_OPTS = ["Cotton", "Silk", "Linen", "Chiffon", "Georgette", "Polyester", "Velvet", "Muslin"];
@@ -35,7 +36,6 @@ export default function VotingScreen({ user, onLogout }) {
         if (voteSnap.exists()) {
           const vd = voteSnap.data();
           setSavedVotes(vd);
-          // Restore selections/scores from saved votes
           const newSel = { 1: null, 2: null, 3: null };
           const newScores = {};
           const newAttrs = {};
@@ -108,9 +108,12 @@ export default function VotingScreen({ user, onLogout }) {
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-          <div>
-            <h1 style={{ ...S.h1, fontSize: 22, marginBottom: 2 }}>StyleVote</h1>
-            <p style={S.muted}>Welcome, {user.name}!</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <img src={logo} alt="Jolrasi" style={{ height: 36, objectFit: "contain" }} />
+            <div>
+              <h1 style={{ ...S.h1, fontSize: 18, marginBottom: 2 }}>StyleVote</h1>
+              <p style={{ ...S.muted, fontSize: 12 }}>Welcome, {user.name}!</p>
+            </div>
           </div>
           <button style={S.btnOutline} onClick={onLogout}>Logout</button>
         </div>

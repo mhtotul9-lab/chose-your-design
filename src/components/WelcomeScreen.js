@@ -1,12 +1,17 @@
 // src/components/WelcomeScreen.js
 import React from "react";
 import { S } from "./styles";
+import logo from "../logo.png";
 
 export default function WelcomeScreen({ goTo }) {
   return (
     <div style={S.page}>
       <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ fontSize: 56, marginBottom: 12 }}>👗</div>
+        <img
+          src={logo}
+          alt="Jolrasi Clothing Brand"
+          style={{ width: 220, marginBottom: 16, filter: "drop-shadow(0 0 20px rgba(108,92,231,0.3))" }}
+        />
         <h1 style={S.h1}>StyleVote</h1>
         <p style={S.muted}>Fashion Research Platform</p>
       </div>
