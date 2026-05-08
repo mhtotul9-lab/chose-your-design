@@ -21,9 +21,7 @@ let app = null;
 let db = null;
 
 try {
-  if (!isConfigValid) {
-    throw new Error("Firebase config missing");
-  }
+  if (!isConfigValid) throw new Error("Firebase config missing");
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
 } catch (e) {
