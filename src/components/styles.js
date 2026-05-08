@@ -1,0 +1,20 @@
+// src/components/styles.js
+export const S = {
+  page: { minHeight: "100vh", background: "#0a0a0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 1rem" },
+  card: { background: "#16141f", border: "1.5px solid #2a2840", borderRadius: 18, padding: "2rem", width: "100%", maxWidth: 480 },
+  wideCard: { background: "#16141f", border: "1.5px solid #2a2840", borderRadius: 18, padding: "2rem", width: "100%", maxWidth: 960 },
+  h1: { fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 28, color: "#e8e6f0", marginBottom: 6 },
+  h2: { fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 22, color: "#e8e6f0", marginBottom: 16 },
+  h3: { fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 16, color: "#e8e6f0" },
+  muted: { color: "#a09ec0", fontSize: 14 },
+  label: { display: "block", fontSize: 12, color: "#a09ec0", fontWeight: 600, marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.05em" },
+  fieldWrap: { marginBottom: 14 },
+  btnPrimary: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "12px 20px", background: "#6c5ce7", color: "#fff", border: "none", borderRadius: 12, fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 600 },
+  btnOutline: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "9px 18px", background: "transparent", color: "#a09ec0", border: "1.5px solid #2a2840", borderRadius: 10, fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500 },
+  btnGreen: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "12px 20px", background: "#00b894", color: "#fff", border: "none", borderRadius: 12, fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 600 },
+  btnSmall: { padding: "7px 14px", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, border: "none" },
+  errorBox: { background: "#1f0e0e", border: "1px solid #7f1d1d", color: "#f87171", borderRadius: 10, padding: "10px 14px", fontSize: 13, marginBottom: 14 },
+  successBox: { background: "#0a2420", border: "1px solid #065f46", color: "#34d399", borderRadius: 10, padding: "10px 14px", fontSize: 13, marginBottom: 14 },
+  badge: (color) => ({ display: "inline-block", padding: "3px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: color === "green" ? "#1a3d2e" : color === "purple" ? "#2d2551" : color === "red" ? "#3d1a1a" : color === "gold" ? "#3d2e0a" : "#1a1730", color: color === "green" ? "#34d399" : color === "purple" ? "#a78bfa" : color === "red" ? "#f87171" : color === "gold" ? "#f59e0b" : "#a09ec0" }),
+  divider: { borderTop: "1px solid #2a2840", margin: "16px 0" },
+};
