@@ -1,28 +1,26 @@
 // src/components/ClosedScreen.js
 import React from "react";
 import { S } from "./styles";
-import logo from "../logo.png";
+import { useLang } from "../App";
+import { T } from "../lang";
+import LangSwitcher from "./LangSwitcher";
 
 export default function ClosedScreen() {
+  const { lang } = useLang();
+  const t = T[lang];
   return (
     <div style={S.page}>
-      <img
-        src={logo}
-        alt="Jolrasi Clothing Brand"
-        style={{ width: 200, marginBottom: 24, opacity: 0.8 }}
-      />
-      <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
-      <h1 style={{ ...S.h1, textAlign: "center", marginBottom: 12 }}>StyleVote</h1>
-      <p style={{ ...S.muted, textAlign: "center", maxWidth: 320, lineHeight: 1.7 }}>
-        This platform is currently closed. Please check back later.
-      </p>
+      <div style={{ position: "absolute", top: 16, right: 16 }}>
+        <LangSwitcher />
+      </div>
+      <div style={{ fontSize: 64, marginBottom: 20 }}>🔒</div>
+      <h1 style={{ ...S.h1, textAlign: "center", marginBottom: 12 }}>Jolrasi</h1>
+      <p style={{ ...S.muted, textAlign: "center", maxWidth: 320, lineHeight: 1.7 }}>{t.closed_msg}</p>
       <button
-        style={{ ...S.btnOutline, marginTop: 24, cursor: "pointer" }}
-        onClick={() => {
-          window.location.href = window.location.pathname + "?admin=1";
-        }}
+        style={{ ...S.btnOutline, marginTop: 24 }}
+        onClick={() => { window.location.href = "/admin"; }}
       >
-        🔐 Admin Login
+        🔐 {t.admin_login}
       </button>
     </div>
   );

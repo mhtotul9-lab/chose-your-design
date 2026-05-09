@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import { db } from "./firebase";
 import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 
@@ -15,6 +15,8 @@ import AdminPanel from "./components/AdminPanel";
 import Loader from "./components/Loader";
 
 export const ADMIN_PASS = process.env.REACT_APP_ADMIN_PASSWORD || "admin123";
+export const LangContext = createContext({ lang: "en", setLang: () => {} });
+export const useLang = () => useContext(LangContext);
 
 export const DEFAULT_QUIZ = [
   { q: "What does 'haute couture' mean?", opts: ["High fashion/custom-made", "Ready-to-wear", "Casual wear", "Sports wear"], ans: 0 },
@@ -45,119 +47,102 @@ export const DEFAULT_PRODUCTS = {
   ],
 };
 
+const getRoute = () => {
+  const path = window.location.pathname;
+  if (path === "/admin" || path === "/admin/") return "admin-route";
+  return "user-route";
+};
+
 function App() {
   const [screen, setScreen] = useState("loader");
   const [systemOpen, setSystemOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [dbReady, setDbReady] = useState(false);
+  const [lang, setLang] = useState("en");
+  const route = getRoute();
 
-  // Step 1: Initialize Firebase settings doc
   useEffect(() => {
     const init = async () => {
       try {
         const ref = doc(db, "settings", "global");
         const snap = await getDoc(ref);
         if (!snap.exists()) {
-          await setDoc(ref, {
-            systemOpen: false,
-            quiz: DEFAULT_QUIZ,
-            products: DEFAULT_PRODUCTS,
-          });
-          setSystemOpen(false);
+          await setDoc(ref, { systemOpen: false, quiz: DEFAULT_QUIZ, products: DEFAULT_PRODUCTS });
         } else {
           setSystemOpen(snap.data().systemOpen || false);
         }
-      } catch (e) {
-        console.error("Firebase init error:", e);
-        // Even on error, continue — don't block the app
-      }
+      } catch (e) { console.error("Firebase init:", e); }
       setDbReady(true);
     };
     init();
   }, []);
 
-  // Step 2: After dbReady, decide which screen to show
   useEffect(() => {
     if (!dbReady) return;
-
-    // Always allow admin route
-    if (window.location.search.includes("admin=1")) {
-      const saved = localStorage.getItem("sv_user");
+    if (route === "admin-route") {
+      const saved = sessionStorage.getItem("sv_admin");
       if (saved) {
-        try {
-          const u = JSON.parse(saved);
-          if (u.isAdmin) { setCurrentUser(u); setScreen("admin"); return; }
-        } catch (e) {}
+        try { const u = JSON.parse(saved); if (u.isAdmin) { setCurrentUser(u); setScreen("admin"); return; } } catch (e) {}
       }
       setScreen("admin-login");
       return;
     }
-
-    // Restore user session
-    const saved = localStorage.getItem("sv_user");
+    const saved = sessionStorage.getItem("sv_user");
     if (saved) {
-      try {
-        const u = JSON.parse(saved);
-        setCurrentUser(u);
-        if (u.isAdmin) { setScreen("admin"); return; }
-        setScreen("voting");
-        return;
-      } catch (e) {
-        localStorage.removeItem("sv_user");
-      }
+      try { const u = JSON.parse(saved); setCurrentUser(u); setScreen("voting"); return; } catch (e) { sessionStorage.removeItem("sv_user"); }
     }
-
-    // No session
     setScreen(systemOpen ? "welcome" : "closed");
   }, [dbReady]);
 
-  // Step 3: Real-time system open/close
   useEffect(() => {
     if (!dbReady) return;
     const unsub = onSnapshot(doc(db, "settings", "global"), (snap) => {
       if (snap.exists()) {
         const open = snap.data().systemOpen || false;
         setSystemOpen(open);
-        if (!open && !currentUser && screen !== "admin" && screen !== "admin-login") {
-          setScreen("closed");
-        }
-        if (open && screen === "closed" && !currentUser) {
-          setScreen("welcome");
+        if (route !== "admin-route" && !currentUser) {
+          if (!open) setScreen("closed");
+          if (open && screen === "closed") setScreen("welcome");
         }
       }
     });
     return unsub;
   }, [dbReady, currentUser, screen]);
 
-  const goTo = (s) => setScreen(s);
-
   const handleLogin = (user) => {
     setCurrentUser(user);
-    localStorage.setItem("sv_user", JSON.stringify(user));
-    if (user.isAdmin) { setScreen("admin"); return; }
-    setScreen("voting");
+    if (user.isAdmin) { sessionStorage.setItem("sv_admin", JSON.stringify(user)); setScreen("admin"); }
+    else { sessionStorage.setItem("sv_user", JSON.stringify(user)); setScreen("voting"); }
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    localStorage.removeItem("sv_user");
-    setScreen(systemOpen ? "welcome" : "closed");
+    sessionStorage.removeItem("sv_user");
+    sessionStorage.removeItem("sv_admin");
+    if (route === "admin-route") setScreen("admin-login");
+    else setScreen(systemOpen ? "welcome" : "closed");
   };
 
-  if (!dbReady) return <Loader />;
+  if (!dbReady) return (
+    <LangContext.Provider value={{ lang, setLang }}>
+      <Loader />
+    </LangContext.Provider>
+  );
 
   return (
-    <div>
-      {screen === "closed" && <ClosedScreen />}
-      {screen === "welcome" && <WelcomeScreen goTo={goTo} />}
-      {screen === "quiz" && <QuizScreen goTo={goTo} onPass={() => goTo("register")} onFail={() => goTo("fail")} />}
-      {screen === "fail" && <FailScreen goTo={goTo} />}
-      {screen === "register" && <RegisterScreen goTo={goTo} onSuccess={handleLogin} />}
-      {screen === "login" && <LoginScreen goTo={goTo} onSuccess={handleLogin} />}
-      {screen === "voting" && currentUser && <VotingScreen user={currentUser} onLogout={handleLogout} />}
-      {screen === "admin-login" && <AdminLoginScreen onSuccess={handleLogin} />}
-      {screen === "admin" && currentUser?.isAdmin && <AdminPanel onLogout={handleLogout} systemOpen={systemOpen} />}
-    </div>
+    <LangContext.Provider value={{ lang, setLang }}>
+      <div>
+        {screen === "closed" && <ClosedScreen />}
+        {screen === "welcome" && <WelcomeScreen goTo={setScreen} />}
+        {screen === "quiz" && <QuizScreen goTo={setScreen} onPass={() => setScreen("register")} onFail={() => setScreen("fail")} />}
+        {screen === "fail" && <FailScreen goTo={setScreen} />}
+        {screen === "register" && <RegisterScreen goTo={setScreen} onSuccess={handleLogin} />}
+        {screen === "login" && <LoginScreen goTo={setScreen} onSuccess={handleLogin} />}
+        {screen === "voting" && currentUser && <VotingScreen user={currentUser} onLogout={handleLogout} />}
+        {screen === "admin-login" && <AdminLoginScreen onSuccess={handleLogin} />}
+        {screen === "admin" && currentUser?.isAdmin && <AdminPanel onLogout={handleLogout} systemOpen={systemOpen} />}
+      </div>
+    </LangContext.Provider>
   );
 }
 

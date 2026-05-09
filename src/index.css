@@ -1,56 +1,11 @@
-/* src/index.css */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg: #0a0a0f;
-  --surface: #16141f;
-  --surface2: #1e1b2e;
-  --border: #2a2840;
-  --border2: #3d3a60;
-  --text: #e8e6f0;
-  --muted: #a09ec0;
-  --accent: #6c5ce7;
-  --accent2: #a78bfa;
-  --green: #00b894;
-  --red: #e74c3c;
-  --gold: #f59e0b;
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-  --radius: 12px;
-  --radius-lg: 18px;
-}
-
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.6;
-  min-height: 100vh;
-}
-
-h1,h2,h3,h4 { font-family: var(--font-display); font-weight: 700; }
-
-input, select, textarea {
-  width: 100%;
-  padding: 11px 14px;
-  background: #0d0b18;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-input:focus, select:focus { border-color: var(--accent); }
-input::placeholder { color: var(--muted); }
-
-button { cursor: pointer; font-family: var(--font-body); transition: all 0.18s; }
-button:active { transform: scale(0.97); }
-
-/* scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;color:#e8e6f0;font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+h1,h2,h3,h4{font-family:'Syne',sans-serif;font-weight:700}
+input,select,textarea{width:100%;padding:11px 14px;background:#0d0b18;border:1.5px solid #2a2840;border-radius:10px;color:#e8e6f0;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:#6c5ce7}
+input::placeholder{color:#a09ec0}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s}
+button:active{transform:scale(.97)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#0a0a0f}
+::-webkit-scrollbar-thumb{background:#2a2840;border-radius:10px}
