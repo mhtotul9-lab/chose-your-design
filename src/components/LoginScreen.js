@@ -25,6 +25,7 @@ export default function LoginScreen({ goTo, onSuccess }) {
       if (!snap.exists()) { setError(t.no_account); setLoading(false); return; }
       const u = snap.data();
       if (u.password !== password) { setError(t.wrong_pass); setLoading(false); return; }
+      if (u.banned) { setError("🚫 আপনার অ্যাকাউন্ট ব্যান করা হয়েছে। বিস্তারিত জানতে এডমিনের সাথে যোগাযোগ করুন।"); setLoading(false); return; }
       onSuccess({ email: u.email, name: u.name, gender: u.gender, emailKey, whatsapp: u.whatsapp });
     } catch (e) { setError(t.login_failed); }
     setLoading(false);
