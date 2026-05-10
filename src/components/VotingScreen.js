@@ -139,11 +139,54 @@ export default function VotingScreen({ user, onLogout }) {
   const curAttrs = sel && sel !== "none" ? (attrs[`${step}_${sel}`] || {}) : {};
 
   // All steps done screen
+  const WA_GROUP_URL = "https://chat.whatsapp.com/JmA1LgxacV6ImJ69OYxxB6";
+
+  const WhatsAppGroupBanner = () => (
+    <a
+      href={WA_GROUP_URL}
+      target="_blank"
+      rel="noreferrer"
+      style={{
+        display: "flex", alignItems: "center", gap: 14,
+        background: "linear-gradient(135deg, #0a2a1a 0%, #0d3320 100%)",
+        border: "1.5px solid #25D366",
+        borderRadius: 16, padding: "16px 20px",
+        textDecoration: "none", marginBottom: 20,
+        boxShadow: "0 0 18px rgba(37,211,102,0.13)",
+      }}
+    >
+      <div style={{
+        width: 48, height: 48, borderRadius: "50%",
+        background: "#25D366", display: "flex", alignItems: "center",
+        justifyContent: "center", flexShrink: 0, fontSize: 26
+      }}>
+        💬
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 700, fontSize: 15, color: "#25D366", marginBottom: 3 }}>
+          {lang === "bn" ? "গ্রুপে জয়েন করুন" : "Join Our WhatsApp Group"}
+        </div>
+        <div style={{ fontSize: 12, color: "#a0c8a8", lineHeight: 1.5 }}>
+          {lang === "bn"
+            ? "আমাদের হোয়াটসঅ্যাপ গ্রুপে যোগ দিন — নতুন আপডেট ও অফার সবার আগে পাবেন!"
+            : "Join our WhatsApp group for exclusive updates and offers!"}
+        </div>
+      </div>
+      <div style={{
+        background: "#25D366", color: "#fff",
+        fontWeight: 700, fontSize: 12,
+        padding: "8px 14px", borderRadius: 10, flexShrink: 0
+      }}>
+        {lang === "bn" ? "জয়েন করুন →" : "Join →"}
+      </div>
+    </a>
+  );
+
   if (allDone) {
     return (
       <div style={S.page}>
         <div style={{ position: "absolute", top: 16, right: 16 }}><LangSwitcher /></div>
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", width: "100%", maxWidth: 480, margin: "0 auto" }}>
           <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
           <h2 style={{ ...S.h2, textAlign: "center", marginBottom: 12 }}>
             {lang === "bn" ? "ধন্যবাদ! আপনার ভোট সম্পন্ন হয়েছে।" : "Thank you! All votes submitted."}
@@ -151,10 +194,13 @@ export default function VotingScreen({ user, onLogout }) {
           <p style={{ ...S.muted, marginBottom: 24 }}>
             {lang === "bn" ? "আপনার মতামত আমাদের কাছে অনেক গুরুত্বপূর্ণ।" : "Your feedback means a lot to us."}
           </p>
-          <button style={{ ...S.btnOutline, margin: "0 auto" }} onClick={() => { setAllDone(false); setStep(1); setStage(0); }}>
-            {lang === "bn" ? "আবার দেখুন" : "Review votes"}
-          </button>
-          <button style={{ ...S.btnOutline, marginTop: 10, margin: "10px auto 0" }} onClick={onLogout}>{t.logout}</button>
+          <WhatsAppGroupBanner />
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button style={{ ...S.btnOutline, margin: "0 auto" }} onClick={() => { setAllDone(false); setStep(1); setStage(0); }}>
+              {lang === "bn" ? "আবার দেখুন" : "Review votes"}
+            </button>
+            <button style={{ ...S.btnOutline, margin: "0 auto" }} onClick={onLogout}>{t.logout}</button>
+          </div>
         </div>
       </div>
     );
@@ -176,6 +222,9 @@ export default function VotingScreen({ user, onLogout }) {
         </div>
 
         {toast && <div style={{ ...(toast.type === "success" ? S.successBox : S.errorBox), marginBottom: 16 }}>{toast.msg}</div>}
+
+        {/* WhatsApp Group Banner */}
+        <WhatsAppGroupBanner />
 
         {/* Step progress */}
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
