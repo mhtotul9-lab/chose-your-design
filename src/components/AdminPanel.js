@@ -2,10 +2,18 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc } from "firebase/firestore";
-import { DEFAULT_QUIZ, DEFAULT_PRODUCTS } from "../App";
+import { DEFAULT_QUIZ, DEFAULT_PRODUCTS, DEFAULT_FACTORS } from "../App";
 import { S } from "./styles";
 
-const TABS = ["Products", "Quiz", "Results", "Users"];
+const TABS = ["Products", "Factors", "Quiz", "Results", "Users"];
+
+const FACTOR_LABELS = [
+  { key: "score", label: "Rating score (0-100 slider)", bn: "রেটিং / স্কোর (০-১০০)" },
+  { key: "fabric", label: "Fabric preference", bn: "কাপড়ের ধরন পছন্দ" },
+  { key: "sleeve", label: "Sleeve style preference", bn: "হাতার ধরন পছন্দ" },
+  { key: "bottomStyle", label: "Bottom style (pant) / Dupatta preference", bn: "প্যান্ট/দুপাট্টা পছন্দ" },
+  { key: "color", label: "Color preference", bn: "রঙ পছন্দ" },
+];
 
 const COLOR_MAP = {
   Red: "#e74c3c", Blue: "#3498db", Green: "#27ae60", Black: "#2c2c2c",
@@ -18,6 +26,7 @@ export default function AdminPanel({ onLogout, systemOpen: initOpen }) {
   const [tab, setTab] = useState("Products");
   const [systemOpen, setSystemOpen] = useState(initOpen);
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [factors, setFactors] = useState(DEFAULT_FACTORS);
   const [quiz, setQuiz] = useState(DEFAULT_QUIZ);
   const [votes, setVotes] = useState([]);
   const [users, setUsers] = useState([]);
@@ -39,6 +48,7 @@ export default function AdminPanel({ onLogout, systemOpen: initOpen }) {
         setSystemOpen(d.systemOpen || false);
         if (d.products) setProducts(d.products);
         if (d.quiz) setQuiz(d.quiz);
+        setFactors({ ...DEFAULT_FACTORS, ...(d.factors || {}) });
       }
       const userSnaps = await getDocs(collection(db, "users"));
       setUsers(userSnaps.docs.map(d => ({ _id: d.id, ...d.data() })));
@@ -127,6 +137,7 @@ export default function AdminPanel({ onLogout, systemOpen: initOpen }) {
         </div>
 
         {tab === "Products" && <ProductsTab products={products} setProducts={setProducts} onSave={() => saveSettings({ products })} saving={saving} />}
+        {tab === "Factors" && <FactorsTab factors={factors} setFactors={setFactors} onSave={() => saveSettings({ factors })} saving={saving} />}
         {tab === "Quiz" && <QuizTab quiz={quiz} setQuiz={setQuiz} onSave={() => saveSettings({ quiz })} saving={saving} />}
         {tab === "Results" && <ResultsTab votes={votes} products={products} onDeleteVote={handleDeleteVote} />}
         {tab === "Users" && <UsersTab users={users} onDelete={handleDeleteUser} onBan={handleBanUser} />}
@@ -178,6 +189,29 @@ function ProductsTab({ products, setProducts, onSave, saving }) {
       ))}
       <button style={{ ...S.btnPrimary, maxWidth: 260, opacity: saving ? 0.7 : 1 }} onClick={onSave} disabled={saving}>
         {saving ? "Saving..." : "💾 Save All Products"}
+      </button>
+    </div>
+  );
+}
+
+function FactorsTab({ factors, setFactors, onSave, saving }) {
+  const toggle = (key) => setFactors(prev => ({ ...prev, [key]: !prev[key] }));
+  return (
+    <div>
+      <div style={{ ...S.successBox, marginBottom: 20 }}>
+        💡 <strong>এখানে যে ফ্যাক্টরগুলো অন রাখবেন, শুধু সেগুলোই ইউজার ভোট দেওয়ার সময় দেখতে পাবে। ডিজাইন সিলেকশন সবসময় বাধ্যতামূলক থাকবে।</strong>
+      </div>
+      {FACTOR_LABELS.map(f => (
+        <div key={f.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#16141f", border: "1.5px solid #2a2840", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{f.bn}</div>
+            <div style={{ ...S.muted, fontSize: 12 }}>{f.label}</div>
+          </div>
+          <ToggleSwitch checked={!!factors[f.key]} onChange={() => toggle(f.key)} />
+        </div>
+      ))}
+      <button style={{ ...S.btnPrimary, maxWidth: 260, opacity: saving ? 0.7 : 1, marginTop: 10 }} onClick={onSave} disabled={saving}>
+        {saving ? "Saving..." : "💾 Save Factors"}
       </button>
     </div>
   );

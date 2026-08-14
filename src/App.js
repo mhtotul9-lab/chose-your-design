@@ -47,6 +47,16 @@ export const DEFAULT_PRODUCTS = {
   ],
 };
 
+// Which preference factors are asked from users during voting.
+// Admin can turn these on/off from the Admin Panel.
+export const DEFAULT_FACTORS = {
+  score: true,
+  fabric: true,
+  sleeve: true,
+  bottomStyle: true, // pant style (male) / dupatta (female)
+  color: true,
+};
+
 const getRoute = () => {
   const path = window.location.pathname;
   if (path === "/admin" || path === "/admin/") return "admin-route";
@@ -67,7 +77,7 @@ function App() {
         const ref = doc(db, "settings", "global");
         const snap = await getDoc(ref);
         if (!snap.exists()) {
-          await setDoc(ref, { systemOpen: false, quiz: DEFAULT_QUIZ, products: DEFAULT_PRODUCTS });
+          await setDoc(ref, { systemOpen: false, quiz: DEFAULT_QUIZ, products: DEFAULT_PRODUCTS, factors: DEFAULT_FACTORS });
         } else {
           setSystemOpen(snap.data().systemOpen || false);
         }

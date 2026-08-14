@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { DEFAULT_PRODUCTS } from "../App";
+import { DEFAULT_PRODUCTS, DEFAULT_FACTORS } from "../App";
 import { S } from "./styles";
 import { useLang } from "../App";
 import { T } from "../lang";
@@ -27,6 +27,7 @@ export default function VotingScreen({ user, onLogout }) {
   const [step, setStep] = useState(1);
   const [stage, setStage] = useState(0); // 0=select, 1=rate
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [factors, setFactors] = useState(DEFAULT_FACTORS);
   const [selections, setSelections] = useState({ 1: null, 2: null, 3: null }); // null=not chosen, "none"=skipped
   const [scores, setScores] = useState({});
   const [attrs, setAttrs] = useState({});
@@ -40,7 +41,11 @@ export default function VotingScreen({ user, onLogout }) {
     const load = async () => {
       try {
         const settSnap = await getDoc(doc(db, "settings", "global"));
-        if (settSnap.exists() && settSnap.data().products) setProducts(settSnap.data().products);
+        if (settSnap.exists()) {
+          const settData = settSnap.data();
+          if (settData.products) setProducts(settData.products);
+          if (settData.factors) setFactors({ ...DEFAULT_FACTORS, ...settData.factors });
+        }
         const voteSnap = await getDoc(doc(db, "votes", user.emailKey));
         if (voteSnap.exists()) {
           const vd = voteSnap.data();
@@ -141,44 +146,22 @@ export default function VotingScreen({ user, onLogout }) {
   // All steps done screen
   const WA_GROUP_URL = "https://chat.whatsapp.com/JmA1LgxacV6ImJ69OYxxB6";
 
-  const WhatsAppGroupBanner = () => (
+  // Small, unobtrusive WhatsApp join button (replaces the old large banner)
+  const WhatsAppSmallButton = ({ style }) => (
     <a
       href={WA_GROUP_URL}
       target="_blank"
       rel="noreferrer"
       style={{
-        display: "flex", alignItems: "center", gap: 14,
-        background: "linear-gradient(135deg, #0a2a1a 0%, #0d3320 100%)",
-        border: "1.5px solid #25D366",
-        borderRadius: 16, padding: "16px 20px",
-        textDecoration: "none", marginBottom: 20,
-        boxShadow: "0 0 18px rgba(37,211,102,0.13)",
+        display: "inline-flex", alignItems: "center", gap: 6,
+        background: "#0d3320", border: "1.5px solid #25D366",
+        borderRadius: 20, padding: "6px 12px",
+        textDecoration: "none", color: "#34d399",
+        fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
+        ...style,
       }}
     >
-      <div style={{
-        width: 48, height: 48, borderRadius: "50%",
-        background: "#25D366", display: "flex", alignItems: "center",
-        justifyContent: "center", flexShrink: 0, fontSize: 26
-      }}>
-        💬
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 15, color: "#25D366", marginBottom: 3 }}>
-          {lang === "bn" ? "গ্রুপে জয়েন করুন" : "Join Our WhatsApp Group"}
-        </div>
-        <div style={{ fontSize: 12, color: "#a0c8a8", lineHeight: 1.5 }}>
-          {lang === "bn"
-            ? "আমাদের হোয়াটসঅ্যাপ গ্রুপে যোগ দিন — নতুন আপডেট ও অফার সবার আগে পাবেন!"
-            : "Join our WhatsApp group for exclusive updates and offers!"}
-        </div>
-      </div>
-      <div style={{
-        background: "#25D366", color: "#fff",
-        fontWeight: 700, fontSize: 12,
-        padding: "8px 14px", borderRadius: 10, flexShrink: 0
-      }}>
-        {lang === "bn" ? "জয়েন করুন →" : "Join →"}
-      </div>
+      💬 {t.wa_join_short}
     </a>
   );
 
@@ -191,10 +174,12 @@ export default function VotingScreen({ user, onLogout }) {
           <h2 style={{ ...S.h2, textAlign: "center", marginBottom: 12 }}>
             {lang === "bn" ? "ধন্যবাদ! আপনার ভোট সম্পন্ন হয়েছে।" : "Thank you! All votes submitted."}
           </h2>
-          <p style={{ ...S.muted, marginBottom: 24 }}>
+          <p style={{ ...S.muted, marginBottom: 16 }}>
             {lang === "bn" ? "আপনার মতামত আমাদের কাছে অনেক গুরুত্বপূর্ণ।" : "Your feedback means a lot to us."}
           </p>
-          <WhatsAppGroupBanner />
+          <div style={{ marginBottom: 20 }}>
+            <WhatsAppSmallButton />
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button style={{ ...S.btnOutline, margin: "0 auto" }} onClick={() => { setAllDone(false); setStep(1); setStage(0); }}>
               {lang === "bn" ? "আবার দেখুন" : "Review votes"}
@@ -215,16 +200,14 @@ export default function VotingScreen({ user, onLogout }) {
             <h1 style={{ ...S.h1, fontSize: 20, marginBottom: 2 }}>👗 Jolrasi Vote</h1>
             <p style={S.muted}>{t.welcome_user(user.name)}</p>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <WhatsAppSmallButton />
             <LangSwitcher />
             <button style={S.btnOutline} onClick={onLogout}>{t.logout}</button>
           </div>
         </div>
 
         {toast && <div style={{ ...(toast.type === "success" ? S.successBox : S.errorBox), marginBottom: 16 }}>{toast.msg}</div>}
-
-        {/* WhatsApp Group Banner */}
-        <WhatsAppGroupBanner />
 
         {/* Step progress */}
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
@@ -288,24 +271,33 @@ export default function VotingScreen({ user, onLogout }) {
             </div>
 
             {/* Score */}
-            <div style={{ background: "#16141f", border: "1.5px solid #2a2840", borderRadius: 14, padding: 16, marginBottom: 14 }}>
-              <p style={{ ...S.muted, fontSize: 13, fontWeight: 600, marginBottom: 10 }}>{t.rating_instruction}</p>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={S.muted}>{lang === "bn" ? "স্কোর" : "Score"}</span>
-                <span style={{ fontWeight: 700, color: "#a78bfa", fontSize: 20 }}>{curScore}/100</span>
+            {factors.score && (
+              <div style={{ background: "#16141f", border: "1.5px solid #2a2840", borderRadius: 14, padding: 16, marginBottom: 14 }}>
+                <p style={{ ...S.muted, fontSize: 13, fontWeight: 600, marginBottom: 10 }}>{t.rating_instruction}</p>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={S.muted}>{lang === "bn" ? "স্কোর" : "Score"}</span>
+                  <span style={{ fontWeight: 700, color: "#a78bfa", fontSize: 20 }}>{curScore}/100</span>
+                </div>
+                <input type="range" min="0" max="100" value={curScore}
+                  onChange={e => setScore(sel, e.target.value)}
+                  style={{ width: "100%", accentColor: "#6c5ce7" }} />
               </div>
-              <input type="range" min="0" max="100" value={curScore}
-                onChange={e => setScore(sel, e.target.value)}
-                style={{ width: "100%", accentColor: "#6c5ce7" }} />
-            </div>
+            )}
 
-            <AttrGroup label={t.fabric_instruction} options={CLOTH_OPTS} selected={curAttrs.cloth} onPick={v => pickAttr(sel, "cloth", v)} />
-            <AttrGroup label={t.sleeve_instruction} options={SLEEVE_OPTS} selected={curAttrs.sleeve} onPick={v => pickAttr(sel, "sleeve", v)} />
-            {isFemale
-              ? <AttrGroup label={lang === "bn" ? "🥻 কোন দুপাট্টা পছন্দ করবেন?" : "🥻 Preferred dupatta:"} options={DUPATTA_OPTS} selected={curAttrs.dupatta} onPick={v => pickAttr(sel, "dupatta", v)} />
-              : <AttrGroup label={t.bottom_instruction} options={PANT_OPTS} selected={curAttrs.pant} onPick={v => pickAttr(sel, "pant", v)} />
-            }
-            <AttrGroup label={t.color_instruction} options={COLOR_OPTS} selected={curAttrs.color} onPick={v => pickAttr(sel, "color", v)} />
+            {factors.fabric && (
+              <AttrGroup label={t.fabric_instruction} options={CLOTH_OPTS} selected={curAttrs.cloth} onPick={v => pickAttr(sel, "cloth", v)} />
+            )}
+            {factors.sleeve && (
+              <AttrGroup label={t.sleeve_instruction} options={SLEEVE_OPTS} selected={curAttrs.sleeve} onPick={v => pickAttr(sel, "sleeve", v)} />
+            )}
+            {factors.bottomStyle && (
+              isFemale
+                ? <AttrGroup label={lang === "bn" ? "🥻 কোন দুপাট্টা পছন্দ করবেন?" : "🥻 Preferred dupatta:"} options={DUPATTA_OPTS} selected={curAttrs.dupatta} onPick={v => pickAttr(sel, "dupatta", v)} />
+                : <AttrGroup label={t.bottom_instruction} options={PANT_OPTS} selected={curAttrs.pant} onPick={v => pickAttr(sel, "pant", v)} />
+            )}
+            {factors.color && (
+              <AttrGroup label={t.color_instruction} options={COLOR_OPTS} selected={curAttrs.color} onPick={v => pickAttr(sel, "color", v)} />
+            )}
 
             <button style={{ ...S.btnGreen, marginTop: 16, opacity: saving ? 0.7 : 1 }} onClick={submitVote} disabled={saving}>
               {saving ? t.saving : (savedVotes[step] ? t.update_vote(step) : t.submit_vote(step))}
