@@ -9,3 +9,48 @@ button:active{transform:scale(.97)}
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:#0a0a0f}
 ::-webkit-scrollbar-thumb{background:#2a2840;border-radius:10px}
+
+/* ===== Jolrasi header toolbar ===== */
+.jr-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.jr-brand{display:flex;align-items:center;gap:10px}
+.jr-brand-emoji{font-size:26px;filter:drop-shadow(0 2px 8px rgba(108,92,231,.5))}
+.jr-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.jr-pill{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s ease,background .22s ease,border-color .22s ease;border:1.5px solid transparent;white-space:nowrap}
+.jr-pill:hover{transform:translateY(-2px)}
+.jr-pill:active{transform:translateY(0) scale(.95)}
+
+.jr-wa-pill{background:linear-gradient(135deg,#0d3320,#0a2a1a);border-color:#25D366;color:#34d399}
+.jr-wa-pill:hover{box-shadow:0 8px 20px rgba(37,211,102,.28);background:linear-gradient(135deg,#0f4a2c,#0d3320);border-color:#2ee879}
+.jr-wa-pill .jr-wa-icon{display:inline-block;transition:transform .3s ease}
+.jr-wa-pill:hover .jr-wa-icon{transform:rotate(-12deg) scale(1.15)}
+
+.jr-logout-pill{background:#16141f;color:#a09ec0;border-color:#2a2840}
+.jr-logout-pill:hover{border-color:#f87171;color:#f87171;box-shadow:0 8px 18px rgba(248,113,113,.16)}
+
+.jr-lang-switch{display:inline-flex;align-items:center;background:#16141f;border:1.5px solid #2a2840;border-radius:999px;padding:3px;gap:2px;transition:border-color .22s ease}
+.jr-lang-switch:hover{border-color:#3d3a60}
+.jr-lang-btn{border:none;background:transparent;color:#8a87a8;padding:7px 13px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:color .25s ease,background .25s ease,box-shadow .25s ease;white-space:nowrap}
+.jr-lang-btn.active{background:linear-gradient(135deg,#7c6ff0,#6c5ce7);color:#fff;box-shadow:0 4px 14px rgba(108,92,231,.45)}
+.jr-lang-btn:hover:not(.active){color:#e8e6f0}
+
+/* Step tabs */
+.jr-step{transition:transform .2s ease,box-shadow .2s ease}
+.jr-step:hover{transform:translateY(-2px)}
+
+/* Product cards */
+.jr-product-card{transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s ease,border-color .22s ease}
+.jr-product-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(108,92,231,.18)}
+.jr-product-card img{transition:transform .35s ease}
+.jr-product-card:hover img{transform:scale(1.05)}
+
+/* Attribute pick buttons */
+.jr-attr-btn{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease,color .18s ease}
+.jr-attr-btn:hover{transform:translateY(-2px);border-color:#6c5ce7}
+
+@media (max-width:480px){
+  .jr-header{gap:12px}
+  .jr-toolbar{width:100%;justify-content:flex-start}
+  .jr-pill,.jr-lang-switch{padding-top:8px;padding-bottom:8px}
+}
+

@@ -66,8 +66,17 @@ export default function VotingScreen({ user, onLogout }) {
           setSelections(newSel);
           setScores(newScores);
           setAttrs(newAttrs);
-          // check if all done
-          if (newSel[1] && newSel[2] && newSel[3]) setAllDone(true);
+          // Land the user on the first step they haven't completed yet.
+          // (No more auto-redirect to the "all done" screen on login —
+          // the user always goes straight to picking a design.)
+          const firstIncomplete = [1, 2, 3].find(s => !newSel[s]);
+          if (firstIncomplete) {
+            setStep(firstIncomplete);
+            setStage(0);
+          } else {
+            setStep(1);
+            setStage(1);
+          }
         }
       } catch (e) { console.error(e); }
       setLoading(false);
@@ -146,22 +155,16 @@ export default function VotingScreen({ user, onLogout }) {
   // All steps done screen
   const WA_GROUP_URL = "https://chat.whatsapp.com/JmA1LgxacV6ImJ69OYxxB6";
 
-  // Small, unobtrusive WhatsApp join button (replaces the old large banner)
+  // Small, unobtrusive WhatsApp join pill (replaces the old large banner)
   const WhatsAppSmallButton = ({ style }) => (
     <a
       href={WA_GROUP_URL}
       target="_blank"
       rel="noreferrer"
-      style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        background: "#0d3320", border: "1.5px solid #25D366",
-        borderRadius: 20, padding: "6px 12px",
-        textDecoration: "none", color: "#34d399",
-        fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
-        ...style,
-      }}
+      className="jr-pill jr-wa-pill"
+      style={style}
     >
-      💬 {t.wa_join_short}
+      <span className="jr-wa-icon">💬</span> {t.wa_join_short}
     </a>
   );
 
@@ -177,7 +180,7 @@ export default function VotingScreen({ user, onLogout }) {
           <p style={{ ...S.muted, marginBottom: 16 }}>
             {lang === "bn" ? "আপনার মতামত আমাদের কাছে অনেক গুরুত্বপূর্ণ।" : "Your feedback means a lot to us."}
           </p>
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}>
             <WhatsAppSmallButton />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -195,15 +198,18 @@ export default function VotingScreen({ user, onLogout }) {
     <div style={{ minHeight: "100vh", background: "#0a0a0f", padding: "1.5rem 1rem" }}>
       <div style={{ maxWidth: 700, margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-          <div>
-            <h1 style={{ ...S.h1, fontSize: 20, marginBottom: 2 }}>👗 Jolrasi Vote</h1>
-            <p style={S.muted}>{t.welcome_user(user.name)}</p>
+        <div className="jr-header">
+          <div className="jr-brand">
+            <span className="jr-brand-emoji">👗</span>
+            <div>
+              <h1 style={{ ...S.h1, fontSize: 20, marginBottom: 2 }}>Jolrasi Vote</h1>
+              <p style={S.muted}>{t.welcome_user(user.name)}</p>
+            </div>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <div className="jr-toolbar">
             <WhatsAppSmallButton />
             <LangSwitcher />
-            <button style={S.btnOutline} onClick={onLogout}>{t.logout}</button>
+            <button className="jr-pill jr-logout-pill" onClick={onLogout}>⏻ {t.logout}</button>
           </div>
         </div>
 
@@ -215,7 +221,7 @@ export default function VotingScreen({ user, onLogout }) {
             const done = savedVotes[s] !== undefined;
             const active = s === step;
             return (
-              <div key={s} onClick={() => { if (done || s <= step) { setStep(s); setStage(savedVotes[s] ? 1 : 0); } }}
+              <div key={s} className="jr-step" onClick={() => { if (done || s <= step) { setStep(s); setStage(savedVotes[s] ? 1 : 0); } }}
                 style={{ flex: 1, padding: "10px 0", textAlign: "center", borderRadius: 12, border: `2px solid ${active ? "#6c5ce7" : done ? "#00b894" : "#2a2840"}`, background: active ? "#1e1b3a" : done ? "#0a2420" : "#16141f", color: active ? "#a78bfa" : done ? "#34d399" : "#a09ec0", fontWeight: 700, fontSize: 14, cursor: (done || s <= step) ? "pointer" : "default" }}>
                 {done ? "✓ " : ""}{t.step_label(s)}
               </div>
@@ -237,10 +243,12 @@ export default function VotingScreen({ user, onLogout }) {
               {curProds.map(p => {
                 const isSelected = sel === p.id;
                 return (
-                  <div key={p.id} onClick={() => selectProduct(p.id)}
-                    style={{ background: isSelected ? "#1e1b3a" : "#16141f", border: `2px solid ${isSelected ? "#6c5ce7" : "#2a2840"}`, borderRadius: 14, padding: 12, cursor: "pointer", transition: "all 0.18s" }}>
-                    <img src={p.img} alt={p.name} onError={e => { e.target.style.display = "none"; }}
-                      style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, marginBottom: 8, display: "block" }} />
+                  <div key={p.id} className="jr-product-card" onClick={() => selectProduct(p.id)}
+                    style={{ background: isSelected ? "#1e1b3a" : "#16141f", border: `2px solid ${isSelected ? "#6c5ce7" : "#2a2840"}`, borderRadius: 14, padding: 12, cursor: "pointer", overflow: "hidden" }}>
+                    <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 8 }}>
+                      <img src={p.img} alt={p.name} onError={e => { e.target.style.display = "none"; }}
+                        style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} />
+                    </div>
                     <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{p.name}</div>
                     <div style={{ fontSize: 11, color: "#a09ec0" }}>{p.category}</div>
                     {isSelected && <div style={{ marginTop: 6, ...S.badge("purple"), display: "block", textAlign: "center" }}>✓ Selected</div>}
@@ -315,7 +323,7 @@ function AttrGroup({ label, options, selected, onPick }) {
       <p style={{ ...S.muted, fontSize: 13, fontWeight: 600, marginBottom: 10 }}>{label}</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {options.map(o => (
-          <button key={o} onClick={() => onPick(o)}
+          <button key={o} className="jr-attr-btn" onClick={() => onPick(o)}
             style={{ padding: "6px 12px", borderRadius: 8, border: `1.5px solid ${selected === o ? "#00b894" : "#2a2840"}`, background: selected === o ? "#0a2420" : "#0d0b18", color: selected === o ? "#34d399" : "#a09ec0", fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: selected === o ? 600 : 400, cursor: "pointer" }}>
             {o}
           </button>
