@@ -15,6 +15,15 @@ const FACTOR_LABELS = [
   { key: "color", label: "Color preference", bn: "রঙ পছন্দ" },
 ];
 
+// Legacy quiz data may have plain-string questions/options.
+// Normalize everything to { en, bn } so the admin can edit both languages.
+const asLang = (v) => (typeof v === "string" ? { en: v, bn: v } : { en: v?.en || "", bn: v?.bn || "" });
+const normalizeQuiz = (quiz) => (quiz || []).map(q => ({
+  ...q,
+  q: asLang(q.q),
+  opts: (q.opts || []).map(asLang),
+}));
+
 const COLOR_MAP = {
   Red: "#e74c3c", Blue: "#3498db", Green: "#27ae60", Black: "#2c2c2c",
   White: "#ecf0f1", Yellow: "#f1c40f", Pink: "#e91e8c", Purple: "#9b59b6",
@@ -47,7 +56,7 @@ export default function AdminPanel({ onLogout, systemOpen: initOpen }) {
         const d = settSnap.data();
         setSystemOpen(d.systemOpen || false);
         if (d.products) setProducts(d.products);
-        if (d.quiz) setQuiz(d.quiz);
+        if (d.quiz) setQuiz(normalizeQuiz(d.quiz));
         setFactors({ ...DEFAULT_FACTORS, ...(d.factors || {}) });
       }
       const userSnaps = await getDocs(collection(db, "users"));
@@ -218,28 +227,49 @@ function FactorsTab({ factors, setFactors, onSave, saving }) {
 }
 
 function QuizTab({ quiz, setQuiz, onSave, saving }) {
-  const upQ = (qi, k, v) => setQuiz(p => { const n = [...p]; n[qi] = { ...n[qi], [k]: v }; return n; });
-  const upO = (qi, oi, v) => setQuiz(p => { const n = JSON.parse(JSON.stringify(p)); n[qi].opts[oi] = v; return n; });
+  const upQ = (qi, langKey, v) => setQuiz(p => { const n = [...p]; n[qi] = { ...n[qi], q: { ...n[qi].q, [langKey]: v } }; return n; });
+  const upAns = (qi, v) => setQuiz(p => { const n = [...p]; n[qi] = { ...n[qi], ans: v }; return n; });
+  const upImg = (qi, v) => setQuiz(p => { const n = [...p]; n[qi] = { ...n[qi], img: v }; return n; });
+  const upO = (qi, oi, langKey, v) => setQuiz(p => { const n = JSON.parse(JSON.stringify(p)); n[qi].opts[oi][langKey] = v; return n; });
   const del = (qi) => setQuiz(p => p.filter((_, i) => i !== qi));
-  const add = () => setQuiz(p => [...p, { q: "New question?", opts: ["Option A", "Option B", "Option C", "Option D"], ans: 0 }]);
+  const add = () => setQuiz(p => [...p, {
+    q: { en: "New question?", bn: "নতুন প্রশ্ন?" },
+    opts: [
+      { en: "Option A", bn: "অপশন এ" }, { en: "Option B", bn: "অপশন বি" },
+      { en: "Option C", bn: "অপশন সি" }, { en: "Option D", bn: "অপশন ডি" },
+    ],
+    ans: 0,
+  }]);
   return (
     <div>
-      <p style={{ ...S.muted, marginBottom: 16 }}>Users must score ≥80% to register. Radio = correct answer.</p>
+      <p style={{ ...S.muted, marginBottom: 16 }}>Users must score ≥80% to register. Radio = correct answer. Fill in both English and বাংলা so the language switcher works during the quiz.</p>
       {quiz.map((q, qi) => (
         <div key={qi} style={{ background: "#16141f", border: "1.5px solid #2a2840", borderRadius: 14, padding: 16, marginBottom: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={S.badge("purple")}>Q{qi + 1}</span>
             <button onClick={() => del(qi)} style={{ padding: "5px 12px", borderRadius: 8, background: "#3d1a1a", color: "#f87171", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Delete</button>
           </div>
-          <input value={q.q} onChange={e => upQ(qi, "q", e.target.value)} placeholder="Question" style={{ marginBottom: 12 }} />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+            <div>
+              <label style={{ ...S.label, marginBottom: 3 }}>Question (English)</label>
+              <input value={q.q?.en || ""} onChange={e => upQ(qi, "en", e.target.value)} placeholder="Question in English" style={{ marginBottom: 0 }} />
+            </div>
+            <div>
+              <label style={{ ...S.label, marginBottom: 3 }}>প্রশ্ন (বাংলা)</label>
+              <input value={q.q?.bn || ""} onChange={e => upQ(qi, "bn", e.target.value)} placeholder="বাংলায় প্রশ্ন লিখুন" style={{ marginBottom: 0 }} />
+            </div>
+          </div>
+
           {q.opts.map((o, oi) => (
             <div key={oi} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
-              <input type="radio" name={"c_" + qi} checked={q.ans === oi} onChange={() => upQ(qi, "ans", oi)} style={{ width: 16, height: 16, accentColor: "#00b894", cursor: "pointer" }} />
-              <input value={o} onChange={e => upO(qi, oi, e.target.value)} style={{ flex: 1, marginBottom: 0 }} />
+              <input type="radio" name={"c_" + qi} checked={q.ans === oi} onChange={() => upAns(qi, oi)} style={{ width: 16, height: 16, accentColor: "#00b894", cursor: "pointer", flexShrink: 0 }} />
+              <input value={o.en || ""} onChange={e => upO(qi, oi, "en", e.target.value)} placeholder={`Option ${oi + 1} (English)`} style={{ flex: 1, marginBottom: 0 }} />
+              <input value={o.bn || ""} onChange={e => upO(qi, oi, "bn", e.target.value)} placeholder={`অপশন ${oi + 1} (বাংলা)`} style={{ flex: 1, marginBottom: 0 }} />
               {q.ans === oi && <span style={S.badge("green")}>✓</span>}
             </div>
           ))}
-          <input value={q.img || ""} onChange={e => upQ(qi, "img", e.target.value)} placeholder="Optional image URL" style={{ marginTop: 8, fontSize: 12 }} />
+          <input value={q.img || ""} onChange={e => upImg(qi, e.target.value)} placeholder="Optional image URL" style={{ marginTop: 8, fontSize: 12 }} />
         </div>
       ))}
       <button onClick={add} style={{ ...S.btnOutline, marginBottom: 16 }}>+ Add Question</button><br />

@@ -18,13 +18,53 @@ export const ADMIN_PASS = process.env.REACT_APP_ADMIN_PASSWORD || "admin123";
 export const LangContext = createContext({ lang: "en", setLang: () => {} });
 export const useLang = () => useContext(LangContext);
 
+// Quiz questions/options are bilingual: { en: "...", bn: "..." }.
+// This lets the language switcher work correctly during the quiz too.
 export const DEFAULT_QUIZ = [
-  { q: "What does 'haute couture' mean?", opts: ["High fashion/custom-made", "Ready-to-wear", "Casual wear", "Sports wear"], ans: 0 },
-  { q: "Which fabric is made from silkworm cocoons?", opts: ["Cotton", "Linen", "Silk", "Polyester"], ans: 2 },
-  { q: "What is a 'monochrome' outfit?", opts: ["Multiple colors", "One color in varying shades", "Black and white only", "Printed pattern"], ans: 1 },
-  { q: "What does 'fast fashion' refer to?", opts: ["Sportswear brands", "Cheap rapidly-produced trendy clothes", "Luxury fashion", "Vintage clothing"], ans: 1 },
-  { q: "Which part of clothing is an 'inseam'?", opts: ["Sleeve length", "Inner leg measurement", "Collar width", "Waist band"], ans: 1 },
+  { q: { en: "What does 'haute couture' mean?", bn: "'হাউট কুতুর' বলতে কী বোঝায়?" },
+    opts: [
+      { en: "High fashion/custom-made", bn: "উচ্চমানের/কাস্টম তৈরি ফ্যাশন" },
+      { en: "Ready-to-wear", bn: "রেডি-টু-ওয়্যার" },
+      { en: "Casual wear", bn: "ক্যাজুয়াল পোশাক" },
+      { en: "Sports wear", bn: "স্পোর্টস পোশাক" },
+    ], ans: 0 },
+  { q: { en: "Which fabric is made from silkworm cocoons?", bn: "রেশম পোকার গুটি থেকে কোন কাপড় তৈরি হয়?" },
+    opts: [
+      { en: "Cotton", bn: "সুতি" },
+      { en: "Linen", bn: "লিনেন" },
+      { en: "Silk", bn: "সিল্ক" },
+      { en: "Polyester", bn: "পলিয়েস্টার" },
+    ], ans: 2 },
+  { q: { en: "What is a 'monochrome' outfit?", bn: "'মনোক্রোম' পোশাক বলতে কী বোঝায়?" },
+    opts: [
+      { en: "Multiple colors", bn: "একাধিক রঙ" },
+      { en: "One color in varying shades", bn: "এক রঙের বিভিন্ন শেড" },
+      { en: "Black and white only", bn: "শুধু কালো ও সাদা" },
+      { en: "Printed pattern", bn: "প্রিন্টেড প্যাটার্ন" },
+    ], ans: 1 },
+  { q: { en: "What does 'fast fashion' refer to?", bn: "'ফাস্ট ফ্যাশন' বলতে কী বোঝায়?" },
+    opts: [
+      { en: "Sportswear brands", bn: "স্পোর্টসওয়্যার ব্র্যান্ড" },
+      { en: "Cheap rapidly-produced trendy clothes", bn: "সস্তা ও দ্রুত তৈরি ট্রেন্ডি পোশাক" },
+      { en: "Luxury fashion", bn: "বিলাসবহুল ফ্যাশন" },
+      { en: "Vintage clothing", bn: "ভিন্টেজ পোশাক" },
+    ], ans: 1 },
+  { q: { en: "Which part of clothing is an 'inseam'?", bn: "পোশাকের কোন অংশকে 'ইনসিম' বলা হয়?" },
+    opts: [
+      { en: "Sleeve length", bn: "হাতার দৈর্ঘ্য" },
+      { en: "Inner leg measurement", bn: "পায়ের ভেতরের মাপ" },
+      { en: "Collar width", bn: "কলারের প্রস্থ" },
+      { en: "Waist band", bn: "কোমরের বেল্ট" },
+    ], ans: 1 },
 ];
+
+// Helper to safely read bilingual quiz text — supports both the new
+// { en, bn } object format and legacy plain-string questions.
+export const quizText = (val, lang) => {
+  if (val == null) return "";
+  if (typeof val === "string") return val; // legacy single-language data
+  return val[lang] || val.en || val.bn || "";
+};
 
 export const DEFAULT_PRODUCTS = {
   1: [

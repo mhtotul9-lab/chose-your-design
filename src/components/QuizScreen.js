@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { DEFAULT_QUIZ } from "../App";
+import { DEFAULT_QUIZ, quizText } from "../App";
 import { S } from "./styles";
 import { useLang } from "../App";
 import { T } from "../lang";
@@ -57,7 +57,7 @@ export default function QuizScreen({ onPass, onFail, goTo }) {
         </div>
       </div>
       <div style={{ ...S.card, maxWidth: 520 }}>
-        <p style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.6, marginBottom: 20 }}>{q.q}</p>
+        <p style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.6, marginBottom: 20 }}>{quizText(q.q, lang)}</p>
         {q.img && <img src={q.img} alt="q" style={{ width: "100%", borderRadius: 10, marginBottom: 16, maxHeight: 220, objectFit: "cover" }} />}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {q.opts.map((opt, i) => {
@@ -67,9 +67,9 @@ export default function QuizScreen({ onPass, onFail, goTo }) {
               else if (i === selected) { bg = "#1f0e0e"; border = "#e74c3c"; color = "#f87171"; }
             } else if (selected === i) { bg = "#1e1b3a"; border = "#6c5ce7"; color = "#a78bfa"; }
             return (
-              <button key={i} onClick={() => handleSelect(i)}
+              <button key={i} className="jr-attr-btn" onClick={() => handleSelect(i)}
                 style={{ padding: "12px 14px", background: bg, border: `1.5px solid ${border}`, borderRadius: 10, color, fontFamily: "'DM Sans',sans-serif", fontSize: 14, textAlign: "left", cursor: answered ? "default" : "pointer" }}>
-                {opt}
+                {quizText(opt, lang)}
               </button>
             );
           })}
